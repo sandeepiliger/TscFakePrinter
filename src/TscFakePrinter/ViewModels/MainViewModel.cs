@@ -30,6 +30,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string uptime = "00:00:00";
 
     [ObservableProperty] private string receivedText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShouldWarnNoSize))]
+    private string editableText = "";
+
     [ObservableProperty] private string formattedText = "";
     [ObservableProperty] private LabelDocument? currentDocument;
 
@@ -37,6 +42,16 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private int currentLines;
 
     [ObservableProperty] private bool autoScroll = true;
+
+    [ObservableProperty] private bool sizeOverrideEnabled;
+    [ObservableProperty] private double overrideWidthMm = 60;
+    [ObservableProperty] private double overrideHeightMm = 40;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShouldWarnNoSize))]
+    private bool hasExplicitSize;
+
+    public bool ShouldWarnNoSize => !HasExplicitSize && !string.IsNullOrWhiteSpace(EditableText);
 
     [ObservableProperty] private string footerStatus = "Listener stopped. Press Start to begin.";
 
@@ -116,10 +131,47 @@ public partial class MainViewModel : ObservableObject
     private void Clear()
     {
         ReceivedText = "";
-        FormattedText = "";
-        CurrentDocument = null;
-        CurrentBytes = 0;
-        CurrentLines = 0;
+        EditableText = "";
+    }
+
+    partial void OnEditableTextChanged(string value) => RecomputePreview();
+    partial void OnSizeOverrideEnabledChanged(bool value) => RecomputePreview();
+    partial void OnOverrideWidthMmChanged(double value)
+    {
+        if (SizeOverrideEnabled) RecomputePreview();
+    }
+    partial void OnOverrideHeightMmChanged(double value)
+    {
+        if (SizeOverrideEnabled) RecomputePreview();
+    }
+
+    private void RecomputePreview()
+    {
+        if (string.IsNullOrEmpty(EditableText))
+        {
+            FormattedText = "";
+            CurrentDocument = null;
+            CurrentBytes = 0;
+            CurrentLines = 0;
+            HasExplicitSize = false;
+            return;
+        }
+
+        var parsed = TsplParser.Parse(EditableText);
+        var doc = parsed.Document;
+
+        HasExplicitSize = parsed.HasExplicitSize;
+
+        if (SizeOverrideEnabled)
+        {
+            doc.WidthMm = OverrideWidthMm > 0 ? OverrideWidthMm : doc.WidthMm;
+            doc.HeightMm = OverrideHeightMm > 0 ? OverrideHeightMm : doc.HeightMm;
+        }
+
+        FormattedText = parsed.FormattedText;
+        CurrentDocument = doc;
+        CurrentBytes = System.Text.Encoding.UTF8.GetByteCount(EditableText);
+        CurrentLines = parsed.LineCount;
     }
 
     [RelayCommand]
@@ -156,20 +208,16 @@ public partial class MainViewModel : ObservableObject
     {
         Application.Current?.Dispatcher.Invoke(() =>
         {
-            var parsed = TsplParser.Parse(e.Text);
-
             var header = $"# {DateTime.Now:HH:mm:ss}  from {e.Remote.Address}:{e.Remote.Port}  ({e.Payload.Length} bytes)";
             var separator = ReceivedText.Length > 0 ? "\n" : "";
             ReceivedText += $"{separator}{header}\n{e.Text.TrimEnd('\r', '\n')}\n";
 
-            FormattedText = parsed.FormattedText;
-            CurrentDocument = parsed.Document;
-
-            CurrentBytes = e.Payload.Length;
-            CurrentLines = parsed.LineCount;
+            var wasSame = EditableText == e.Text;
+            EditableText = e.Text;
+            if (wasSame) RecomputePreview();
 
             Stats.TotalBytes += e.Payload.Length;
-            Stats.TotalCommands += parsed.LineCount;
+            Stats.TotalCommands += CurrentLines;
 
             History.Insert(0, new ConnectionEntry
             {
@@ -178,7 +226,7 @@ public partial class MainViewModel : ObservableObject
                 Port = e.Remote.Port,
                 ReceivedAt = DateTime.Now,
                 Bytes = e.Payload.Length,
-                Lines = parsed.LineCount,
+                Lines = CurrentLines,
                 PreviewSnippet = BuildSnippet(e.Text),
                 RawText = e.Text
             });

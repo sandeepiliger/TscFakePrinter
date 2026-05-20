@@ -12,6 +12,7 @@ public sealed class TsplParseResult
     public LabelDocument Document { get; init; } = new();
     public string FormattedText { get; init; } = "";
     public int LineCount { get; init; }
+    public bool HasExplicitSize { get; init; }
 }
 
 public static class TsplParser
@@ -22,6 +23,7 @@ public static class TsplParser
         var doc = new LabelDocument();
         var pretty = new StringBuilder();
         var hasCls = false;
+        var hasSize = false;
         var pendingDoc = new LabelDocument();
 
         foreach (var raw in lines)
@@ -36,6 +38,7 @@ public static class TsplParser
             {
                 case "SIZE":
                     ApplySize(pendingDoc, args);
+                    hasSize = true;
                     pretty.Append("SIZE       → ").AppendLine($"{pendingDoc.WidthMm} mm x {pendingDoc.HeightMm} mm");
                     break;
                 case "GAP":
@@ -97,7 +100,8 @@ public static class TsplParser
         {
             Document = doc,
             FormattedText = pretty.ToString(),
-            LineCount = lines.Count(l => l.Trim().Length > 0)
+            LineCount = lines.Count(l => l.Trim().Length > 0),
+            HasExplicitSize = hasSize
         };
     }
 
