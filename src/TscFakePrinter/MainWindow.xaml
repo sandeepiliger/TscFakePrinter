@@ -273,15 +273,26 @@
                                         Background="Transparent"
                                         Padding="14">
                                 <TabItem Header="Raw">
-                                    <TextBox Text="{Binding ReceivedText, Mode=OneWay}"
-                                             IsReadOnly="True"
-                                             FontFamily="Consolas, Cascadia Mono, Courier New"
-                                             FontSize="11"
-                                             BorderThickness="0"
-                                             VerticalScrollBarVisibility="Auto"
-                                             HorizontalScrollBarVisibility="Auto"
-                                             TextWrapping="NoWrap"
-                                             Background="Transparent"/>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Top"
+                                                   Text="Edit the commands below to preview changes in the Preview tab."
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource MutedBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,6"/>
+                                        <TextBox Text="{Binding EditableText, UpdateSourceTrigger=PropertyChanged}"
+                                                 AcceptsReturn="True"
+                                                 AcceptsTab="True"
+                                                 FontFamily="Consolas, Cascadia Mono, Courier New"
+                                                 FontSize="11"
+                                                 BorderBrush="{StaticResource CardBorderBrush}"
+                                                 BorderThickness="1"
+                                                 Padding="6"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 HorizontalScrollBarVisibility="Auto"
+                                                 TextWrapping="NoWrap"
+                                                 Background="White"/>
+                                    </DockPanel>
                                 </TabItem>
                                 <TabItem Header="Formatted">
                                     <TextBox Text="{Binding FormattedText, Mode=OneWay}"
@@ -295,7 +306,68 @@
                                              Background="Transparent"/>
                                 </TabItem>
                                 <TabItem Header="Preview" IsSelected="True">
-                                    <ctl:LabelPreviewControl Document="{Binding CurrentDocument}"/>
+                                    <DockPanel LastChildFill="True">
+                                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                            <Border Background="#FEF3C7"
+                                                    BorderBrush="#FDE68A"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Padding="6,4"
+                                                    Margin="0,0,0,6"
+                                                    Visibility="{Binding ShouldWarnNoSize, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <TextBlock Text="No SIZE in commands — enable override below to set label dimensions."
+                                                           FontSize="10"
+                                                           Foreground="#92400E"
+                                                           TextWrapping="Wrap"/>
+                                            </Border>
+
+                                            <CheckBox Content="Override SIZE"
+                                                      IsChecked="{Binding SizeOverrideEnabled}"
+                                                      FontSize="12"/>
+
+                                            <Grid Margin="0,6,0,0"
+                                                  IsEnabled="{Binding SizeOverrideEnabled}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="8"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <DockPanel>
+                                                    <TextBlock DockPanel.Dock="Left"
+                                                               Text="W"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,6,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}"/>
+                                                    <TextBlock DockPanel.Dock="Right"
+                                                               Text="mm"
+                                                               VerticalAlignment="Center"
+                                                               Margin="4,0,0,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}"/>
+                                                    <TextBox Text="{Binding OverrideWidthMm, UpdateSourceTrigger=PropertyChanged}"
+                                                             Style="{StaticResource PortTextBox}"/>
+                                                </DockPanel>
+                                                <DockPanel Grid.Column="2">
+                                                    <TextBlock DockPanel.Dock="Left"
+                                                               Text="H"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,6,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}"/>
+                                                    <TextBlock DockPanel.Dock="Right"
+                                                               Text="mm"
+                                                               VerticalAlignment="Center"
+                                                               Margin="4,0,0,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource MutedBrush}"/>
+                                                    <TextBox Text="{Binding OverrideHeightMm, UpdateSourceTrigger=PropertyChanged}"
+                                                             Style="{StaticResource PortTextBox}"/>
+                                                </DockPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                        <ctl:LabelPreviewControl Document="{Binding CurrentDocument}"/>
+                                    </DockPanel>
                                 </TabItem>
                             </TabControl>
                         </Grid>
