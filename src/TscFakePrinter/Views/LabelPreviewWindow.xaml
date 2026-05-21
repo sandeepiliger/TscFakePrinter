@@ -38,7 +38,7 @@
                             Margin="0,0,4,0"/>
                     <Slider x:Name="ZoomSlider"
                             Minimum="0.4"
-                            Maximum="6"
+                            Maximum="8"
                             Value="1"
                             Width="240"
                             TickFrequency="0.1"
@@ -77,12 +77,14 @@
 
         <!-- Scrollable preview -->
         <Border Background="#E2E8F0">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+            <ScrollViewer x:Name="Host"
+                          HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto"
                           Padding="20">
                 <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ctl:LabelPreviewControl x:Name="Preview"
-                                              Document="{Binding CurrentDocument}">
+                                              Document="{Binding CurrentDocument}"
+                                              FixedScale="1.0">
                         <ctl:LabelPreviewControl.LayoutTransform>
                             <ScaleTransform ScaleX="{Binding ElementName=ZoomSlider, Path=Value}"
                                             ScaleY="{Binding ElementName=ZoomSlider, Path=Value}"/>
