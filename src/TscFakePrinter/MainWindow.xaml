@@ -178,8 +178,9 @@
                 <!-- Top: Received commands + Preview -->
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="3*" MinWidth="360"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" MinWidth="280"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Received TSPL Commands -->
@@ -260,8 +261,20 @@
                         </Grid>
                     </Border>
 
+                    <!-- Splitter between commands and preview -->
+                    <GridSplitter Grid.Column="1"
+                                  Width="6"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Stretch"
+                                  Background="Transparent"
+                                  ShowsPreview="False"
+                                  ResizeBehavior="PreviousAndNext"
+                                  Cursor="SizeWE"
+                                  Margin="6,0"
+                                  ToolTip="Drag to resize"/>
+
                     <!-- Preview pane -->
-                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="12,0,0,0" Padding="0">
+                    <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -321,9 +334,33 @@
                                                            TextWrapping="Wrap"/>
                                             </Border>
 
-                                            <CheckBox Content="Override SIZE"
-                                                      IsChecked="{Binding SizeOverrideEnabled}"
-                                                      FontSize="12"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Content="Override SIZE"
+                                                          IsChecked="{Binding SizeOverrideEnabled}"
+                                                          FontSize="12"
+                                                          VerticalAlignment="Center"/>
+                                                <Button Grid.Column="1"
+                                                        Click="ExpandPreview_Click"
+                                                        Style="{StaticResource SubtleButton}"
+                                                        ToolTip="Open preview in a larger window"
+                                                        Padding="6,3">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Path Width="12" Height="12"
+                                                              Stretch="Uniform"
+                                                              Fill="#334155"
+                                                              Data="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"
+                                                              VerticalAlignment="Center"/>
+                                                        <TextBlock Text="Expand"
+                                                                   Margin="6,0,0,0"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="11"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
 
                                             <Grid Margin="0,6,0,0"
                                                   IsEnabled="{Binding SizeOverrideEnabled}">
@@ -366,7 +403,13 @@
                                                 </DockPanel>
                                             </Grid>
                                         </StackPanel>
-                                        <ctl:LabelPreviewControl Document="{Binding CurrentDocument}"/>
+                                        <Border Background="Transparent"
+                                                Cursor="Hand"
+                                                MouseLeftButtonUp="PreviewArea_MouseLeftButtonUp"
+                                                ToolTip="Click to open in a larger window">
+                                            <ctl:LabelPreviewControl Document="{Binding CurrentDocument}"
+                                                                      IsHitTestVisible="False"/>
+                                        </Border>
                                     </DockPanel>
                                 </TabItem>
                             </TabControl>
